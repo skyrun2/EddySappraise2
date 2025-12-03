@@ -1,0 +1,42 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "Node.js backend server with Express, TypeScript, and Prisma",
+    "main": "dist/server.js",
+    "scripts": {
+        "dev": "nodemon src/server.ts",
+        "build": "tsc",
+        "start": "node dist/server.js",
+        "lint": "eslint . --max-warnings 0",
+        "check-types": "tsc --noEmit",
+        "prisma:generate": "prisma generate",
+        "prisma:migrate": "prisma migrate dev",
+        "prisma:studio": "prisma studio"
+    },
+    "keywords": [
+        "express",
+        "typescript",
+        "prisma",
+        "postgresql"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@prisma/client": "^6.2.0",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2"
+    },
+    "devDependencies": {
+        "@repo/eslint-config": "*",
+        "@repo/typescript-config": "*",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.15.3",
+        "eslint": "^9.39.1",
+        "nodemon": "^3.1.9",
+        "prisma": "^6.2.0",
+        "ts-node": "^10.9.2",
+        "typescript": "5.9.2"
+    }
+}
