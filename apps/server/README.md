@@ -1,6 +1,6 @@
 # Server - Node.js Backend API
 
-A production-ready Node.js backend server built with Express, TypeScript, and Prisma ORM.
+A production-ready Node.js backend server built with Express, TypeScript, Prisma ORM, and JWT authentication.
 
 ## 🚀 Tech Stack
 
@@ -9,6 +9,8 @@ A production-ready Node.js backend server built with Express, TypeScript, and Pr
 - **Language**: TypeScript
 - **Database**: PostgreSQL
 - **ORM**: Prisma
+- **Authentication**: JWT (jsonwebtoken)
+- **Password Hashing**: bcrypt
 - **Code Quality**: ESLint + Prettier
 
 ## 📁 Project Structure
@@ -22,19 +24,26 @@ server/
 │   │   ├── database.ts        # Prisma client setup
 │   │   └── env.ts             # Environment variables
 │   ├── controllers/           # Request handlers
+│   │   ├── auth.controller.ts
 │   │   └── user.controller.ts
 │   ├── middlewares/           # Express middleware
+│   │   ├── auth.middleware.ts
 │   │   ├── errorHandler.ts
 │   │   ├── logger.ts
 │   │   └── validate.ts
 │   ├── routes/                # API routes
+│   │   ├── auth.routes.ts
 │   │   ├── index.ts
+│   │   ├── protected.routes.ts
 │   │   └── user.routes.ts
 │   ├── services/              # Business logic
 │   │   └── user.service.ts
+│   ├── types/                 # TypeScript type definitions
+│   │   └── express.d.ts
 │   ├── utils/                 # Utility functions
 │   │   ├── ApiError.ts
-│   │   └── asyncHandler.ts
+│   │   ├── asyncHandler.ts
+│   │   └── jwt.util.ts
 │   ├── app.ts                 # Express app setup
 │   └── server.ts              # Server bootstrap
 ├── .env.example               # Environment template
@@ -63,6 +72,11 @@ Update the `.env` file with your configuration:
 NODE_ENV=development
 PORT=5000
 DATABASE_URL="postgresql://username:password@localhost:5432/database_name?schema=public"
+DIRECT_URL="postgresql://username:password@localhost:5432/database_name?schema=public"
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
 ```
 
 ### 3. Database Setup
@@ -126,35 +140,68 @@ npm run check-types
 - `GET /` - Root endpoint
 - `GET /api/health` - Health check
 
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+
 ### Users
 - `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
+- `GET /api/users/:username` - Get user by username
 - `POST /api/users` - Create new user
 - `PUT /api/users/:id` - Update user
 - `DELETE /api/users/:id` - Delete user
 
-### Example Request
+### Protected Routes (Require Authentication)
+- `GET /api/protected/me` - Get authenticated user info
 
-**Create User:**
+## 🔐 Authentication
+
+### Register User
+
 ```bash
-curl -X POST http://localhost:5000/api/users \
+curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "securepassword"}'
+  -d '{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "securePassword123"
+  }'
 ```
 
 **Response:**
 ```json
 {
   "success": true,
-  "message": "User created successfully",
+  "message": "User registered successfully",
   "data": {
-    "id": "uuid-here",
-    "email": "user@example.com",
-    "password": "securepassword",
-    "createdAt": "2025-12-03T01:00:00.000Z",
-    "updatedAt": "2025-12-03T01:00:00.000Z"
+    "user": {
+      "id": "uuid",
+      "username": "johndoe",
+      "email": "john@example.com",
+      "createdAt": "2025-12-03T10:00:00.000Z",
+      "updatedAt": "2025-12-03T10:00:00.000Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
 }
+```
+
+### Login User
+
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john@example.com",
+    "password": "securePassword123"
+  }'
+```
+
+### Access Protected Routes
+
+```bash
+curl -X GET http://localhost:5000/api/protected/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
 ```
 
 ## 🏗️ Architecture
@@ -177,6 +224,15 @@ curl -X POST http://localhost:5000/api/users \
 - **Logger** - Logs all HTTP requests with duration
 - **Error Handler** - Catches and formats errors
 - **Validator** - Validates request data
+- **Auth Middleware** - Validates JWT tokens for protected routes
+
+### Security Features
+
+✅ **Password Hashing** - bcrypt with 10 salt rounds  
+✅ **JWT Authentication** - Secure token-based auth  
+✅ **Token Expiration** - Configurable token lifetime  
+✅ **Protected Routes** - Middleware-based route protection  
+✅ **Secure Responses** - Passwords excluded from API responses
 
 ## 🔧 Development
 
@@ -188,16 +244,18 @@ The server integrates seamlessly with the Turborepo monorepo:
 
 ## 📝 Notes
 
-- **Password Hashing**: In production, hash passwords using bcrypt before storing
-- **Authentication**: Add JWT-based authentication middleware
-- **Validation**: Consider using Zod or Joi for robust validation
-- **Testing**: Add Jest or Vitest for unit and integration tests
+- **Password Hashing**: All passwords are hashed using bcrypt before storage
+- **JWT Tokens**: Tokens expire based on `JWT_EXPIRES_IN` environment variable
+- **Protected Routes**: Use `authMiddleware` to protect any route
+- **User Model**: Includes `id`, `username`, `email`, `password`, `createdAt`, `updatedAt`
 
 ## 🚦 Next Steps
 
-1. Set up password hashing (bcrypt)
-2. Implement JWT authentication
-3. Add input validation with Zod
-4. Create additional models and relationships
-5. Add unit and integration tests
-6. Set up API documentation (Swagger/OpenAPI)
+1. ✅ ~~Set up password hashing (bcrypt)~~
+2. ✅ ~~Implement JWT authentication~~
+3. Add refresh token functionality
+4. Implement rate limiting for auth endpoints
+5. Add input validation with Zod
+6. Create additional models and relationships
+7. Add unit and integration tests
+8. Set up API documentation (Swagger/OpenAPI)

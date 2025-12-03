@@ -14,17 +14,17 @@ export const getAllUsers = asyncHandler(
     }
 );
 
-export const getUserById = asyncHandler(
+export const getUserByUsername = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-        const { id } = req.params;
-        if (!id) {
+        const { username } = req.params;
+        if (!username) {
             res.status(400).json({
                 success: false,
-                message: 'User ID is required',
+                message: 'Username is required',
             });
         }
         else {
-            const user = await userService.getUserById(id);
+            const user = await userService.getUserByUsername(username);
 
             res.status(200).json({
                 success: true,
@@ -36,8 +36,8 @@ export const getUserById = asyncHandler(
 
 export const createUser = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-        const { email, password } = req.body;
-        const user = await userService.createUser({ email, password });
+        const { username, email, password } = req.body;
+        const user = await userService.createUser({ username, email, password });
 
         res.status(201).json({
             success: true,
@@ -53,12 +53,12 @@ export const updateUser = asyncHandler(
         if (!id) {
             res.status(400).json({
                 success: false,
-                message: 'User ID is required',
+                message: 'User id is required',
             });
         }
         else {
-            const { email, password } = req.body;
-            const user = await userService.updateUser(id, { email, password });
+            const { email, password, username } = req.body;
+            const user = await userService.updateUser(id, { email, password, username });
 
             res.status(200).json({
                 success: true,
@@ -75,7 +75,7 @@ export const deleteUser = asyncHandler(
         if (!id) {
             res.status(400).json({
                 success: false,
-                message: 'User ID is required',
+                message: 'User id is required',
             });
         }
         else {

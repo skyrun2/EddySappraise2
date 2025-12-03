@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
     getAllUsers,
-    getUserById,
+    getUserByUsername,
     createUser,
     updateUser,
     deleteUser,
@@ -13,22 +13,22 @@ const router = Router();
 // GET /api/users - Get all users
 router.get('/', getAllUsers);
 
-// GET /api/users/:id - Get user by ID
-router.get('/:id', getUserById);
+// GET /api/users/:username - Get user by username
+router.get('/:username', getUserByUsername);
 
 // POST /api/users - Create new user
 router.post(
     '/',
     validate({
-        body: { email: 'string', password: 'string' },
+        body: { username: 'string', email: 'string', password: 'string' },
     }),
     createUser
 );
 
-// PUT /api/users/:id - Update user
+// PUT /api/users/:username - Update user
 router.put('/:id', updateUser);
 
-// DELETE /api/users/:id - Delete user
+// DELETE /api/users/:username - Delete user
 router.delete('/:id', deleteUser);
 
 export default router;
