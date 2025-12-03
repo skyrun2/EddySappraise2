@@ -23,6 +23,7 @@ export const register = asyncHandler(
             userId: user.id,
             email: user.email,
             username: user.username,
+            role: user.role,
         });
 
         res.status(201).json({
@@ -67,6 +68,7 @@ export const login = asyncHandler(
             userId: user.id,
             email: user.email,
             username: user.username,
+            role: user.role,
         });
 
         // Return user without password
@@ -79,6 +81,24 @@ export const login = asyncHandler(
                 user: safeUser,
                 token,
             },
+        });
+    }
+);
+
+export const getMe = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            throw ApiError.unauthorized('Authentication required');
+        }
+
+        const user = await userService.getUserById(userId);
+        const { password: _, ...safeUser } = user;
+
+        res.status(200).json({
+            success: true,
+            data: safeUser,
         });
     }
 );

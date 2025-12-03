@@ -10,13 +10,57 @@ datasource db {
   url      = env("DIRECT_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
 model User {
   id        String   @id @default(uuid())
   username  String   @unique
   email     String   @unique
   password  String
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  listings  Listing[]
+  orders    Order[]
+
   @@map("users")
+  @@index([email])
+}
+
+model Listing {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  price       Float
+  status      String   @default("ACTIVE")
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      Order[]
+
+  @@map("listings")
+  @@index([sellerId])
+  @@index([status])
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  buyer     User     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId   String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+  @@index([buyerId])
+  @@index([listingId])
 }

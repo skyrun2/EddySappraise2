@@ -7,6 +7,8 @@ import {
     deleteUser,
 } from '../controllers/user.controller';
 import { validate } from '../middlewares/validate';
+import { authMiddleware } from '../middlewares/auth.middleware';
+import { requireOwnership } from '../middlewares/ownership.middleware';
 
 const router = Router();
 
@@ -25,10 +27,10 @@ router.post(
     createUser
 );
 
-// PUT /api/users/:username - Update user
-router.put('/:id', updateUser);
+// PUT /api/users/:id - Update user (protected)
+router.put('/:id', authMiddleware, requireOwnership, updateUser);
 
-// DELETE /api/users/:username - Delete user
-router.delete('/:id', deleteUser);
+// DELETE /api/users/:id - Delete user (protected)
+router.delete('/:id', authMiddleware, requireOwnership, deleteUser);
 
 export default router;
