@@ -13,15 +13,13 @@ export class UserService {
                     id: true,
                     email: true,
                     username: true,
+                    role: true,
                     createdAt: true,
                     updatedAt: true,
                 },
             });
         } catch (error) {
-
-            console.log(error);
-            return []
-
+            throw ApiError.internal('Failed to fetch users');
         }
     }
 
@@ -37,7 +35,6 @@ export class UserService {
 
             return user;
         } catch (error) {
-            console.log(error);
             throw error;
         }
     }
@@ -50,6 +47,7 @@ export class UserService {
                     id: true,
                     email: true,
                     username: true,
+                    role: true,
                     createdAt: true,
                     updatedAt: true,
                 }
@@ -62,7 +60,6 @@ export class UserService {
             return user;
         }
         catch (error) {
-            console.log(error);
             throw error;
         }
     }
@@ -80,7 +77,6 @@ export class UserService {
             return user;
         }
         catch (error) {
-            console.log(error);
             throw error;
         }
     }
@@ -118,13 +114,13 @@ export class UserService {
                     id: true,
                     email: true,
                     username: true,
+                    role: true,
                     createdAt: true,
                     updatedAt: true,
                 },
             });
         }
         catch (error) {
-            console.log(error);
             throw error;
         }
     }
@@ -167,9 +163,6 @@ export class UserService {
             if (data.password) {
                 updateData.password = await bcrypt.hash(data.password, SALT_ROUNDS);
             }
-            console.log({ updateData });
-            console.log({ data });
-
 
             return await prisma.user.update({
                 where: { id },
@@ -178,12 +171,12 @@ export class UserService {
                     id: true,
                     email: true,
                     username: true,
+                    role: true,
                     createdAt: true,
                     updatedAt: true,
                 },
             });
         } catch (error) {
-            console.log(error);
             throw error;
         }
     }

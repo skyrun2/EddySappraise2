@@ -6,6 +6,7 @@ interface AuthRequest extends Request {
         id: string;
         email: string;
         username: string;
+        role: string;
     };
 }
 
@@ -17,6 +18,7 @@ declare global {
                 id: string;
                 email: string;
                 username: string;
+                role: string;
             };
         }
     }
@@ -54,6 +56,7 @@ export const authMiddleware = (
             id: payload.userId,
             email: payload.email,
             username: payload.username,
+            role: payload.role,
         };
 
         next();

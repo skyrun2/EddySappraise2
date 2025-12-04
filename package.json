@@ -16,6 +16,7 @@
     "server:prisma:studio": "npm run prisma:studio -w server"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "prettier": "^3.6.2",
     "turbo": "^2.6.1",
     "typescript": "5.9.2"
@@ -29,6 +30,11 @@
     "packages/*"
   ],
   "dependencies": {
-    "bcrypt": "^6.0.0"
+    "@supabase/supabase-js": "^2.86.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "zod": "^4.1.13"
   }
 }
