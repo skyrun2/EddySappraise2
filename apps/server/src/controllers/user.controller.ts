@@ -55,17 +55,17 @@ export const updateUser = asyncHandler(
                 success: false,
                 message: 'User id is required',
             });
+            return;
         }
-        else {
-            const { email, password, username } = req.body;
-            const user = await userService.updateUser(id, { email, password, username });
 
-            res.status(200).json({
-                success: true,
-                message: 'User updated successfully',
-                data: user,
-            });
-        }
+        const { email, password, username } = req.body;
+        const user = await userService.updateUser(id, { email, password, username });
+
+        res.status(200).json({
+            success: true,
+            message: 'User updated successfully',
+            data: user,
+        });
     }
 );
 
@@ -77,14 +77,14 @@ export const deleteUser = asyncHandler(
                 success: false,
                 message: 'User id is required',
             });
+            return;
         }
-        else {
-            await userService.deleteUser(id);
 
-            res.status(200).json({
-                success: true,
-                message: 'User deleted successfully',
-            });
-        }
+        await userService.deleteUser(id);
+
+        res.status(200).json({
+            success: true,
+            message: 'User deleted successfully',
+        });
     }
 );

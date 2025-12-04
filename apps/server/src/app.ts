@@ -1,16 +1,31 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { logger } from './middlewares/logger';
 import { errorHandler } from './middlewares/errorHandler';
+import { apiRateLimiter } from './middlewares/rateLimiter.middleware';
 import routes from './routes';
 
 const app: Application = express();
 
-// Middleware
-app.use(cors());
+// Security middleware
+app.use(helmet());
+
+// CORS configuration
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+    credentials: true,
+}));
+
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(logger);
+
+// Rate limiting
+app.use('/api', apiRateLimiter);
 
 // Routes
 app.use('/api', routes);

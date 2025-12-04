@@ -10,13 +10,119 @@ datasource db {
   url      = env("DIRECT_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  isKycApproved Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  kyc      KYC?
+  wallet   Wallet?
+  listings Listing[]
+  orders   Order[]
+
+  @@map("users")
+  @@index([email])
+}
+
+model KYC {
+  id                 String    @id @default(cuid())
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String    @unique
+  fullName           String
+  currentSchool      String?
+  location           String
+  docUrl             String?
+  selfieUrl          String?
+  verificationStatus String    @default("pending")
+  submittedAt        DateTime  @default(now())
+  reviewedAt         DateTime?
+  reviewerId         String?
+  rejectionReason    String?
+
+  @@map("kyc")
+  @@index([verificationStatus])
+}
+
+model Wallet {
+  id           String        @id @default(cuid())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String        @unique
+  balance      Int           @default(0)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId  String
+  type      String
+  amount    Int
+  currency  String   @default("usd")
+  metadata  Json?
+  reference String?  @unique
+  status    String   @default("completed")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  orders Order[]
+
+  @@map("transactions")
+  @@index([walletId])
+  @@index([reference])
+  @@index([status])
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  price       Int
+  condition   String?
+  category    String?
+  images      String[]
+  seller      User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId    String
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+
+  @@map("listings")
+  @@index([sellerId])
+  @@index([status])
+}
+
+model Order {
+  id          String       @id @default(cuid())
+  buyer       User         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId     String
+  listing     Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId   String
+  price       Int
+  status      String       @default("pending")
+  escrowTxn   Transaction? @relation(fields: [escrowTxnId], references: [id])
+  escrowTxnId String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("orders")
+  @@index([buyerId])
+  @@index([listingId])
+  @@index([status])
 }
