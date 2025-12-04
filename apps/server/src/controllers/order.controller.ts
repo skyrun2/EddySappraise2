@@ -20,11 +20,11 @@ export const createOrder = asyncHandler(
             return;
         }
 
-        const order = await orderService.createOrder({ buyerId, listingId });
+        const order = await orderService.createOrderWithEscrow({ buyerId, listingId });
 
         res.status(201).json({
             success: true,
-            message: 'Order created successfully',
+            message: 'Order created successfully. Funds held in escrow.',
             data: order,
         });
     }
@@ -56,13 +56,38 @@ export const getOrderById = asyncHandler(
         if (!buyerId) {
             throw ApiError.unauthorized('Authentication required');
         }
+
         if (!id) {
             throw ApiError.badRequest('Order ID is required');
         }
+
         const order = await orderService.getOrderById(id, buyerId);
 
         res.status(200).json({
             success: true,
+            data: order,
+        });
+    }
+);
+
+export const confirmDelivery = asyncHandler(
+    async (req: Request, res: Response): Promise<void> => {
+        const { id } = req.params;
+        const buyerId = req.user?.id;
+
+        if (!buyerId) {
+            throw ApiError.unauthorized('Authentication required');
+        }
+
+        if (!id) {
+            throw ApiError.badRequest('Order ID is required');
+        }
+
+        const order = await orderService.confirmDelivery(id, buyerId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Delivery confirmed. Funds released to seller.',
             data: order,
         });
     }
@@ -76,9 +101,11 @@ export const cancelOrder = asyncHandler(
         if (!buyerId) {
             throw ApiError.unauthorized('Authentication required');
         }
+
         if (!id) {
             throw ApiError.badRequest('Order ID is required');
         }
+
         const order = await orderService.cancelOrder(id, buyerId);
 
         res.status(200).json({

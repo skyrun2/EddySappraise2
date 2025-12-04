@@ -4,6 +4,9 @@ import authRoutes from './auth.routes';
 import protectedRoutes from './protected.routes';
 import listingRoutes from './listing.routes';
 import orderRoutes from './order.routes';
+import uploadRoutes from './upload.routes';
+import kycRoutes from './kyc.routes';
+import walletRoutes from './wallet.routes';
 
 const router = Router();
 
@@ -22,5 +25,8 @@ router.use('/auth', authRoutes);
 router.use('/protected', protectedRoutes);
 router.use('/listings', listingRoutes);
 router.use('/orders', orderRoutes);
+router.use('/uploads', uploadRoutes);
+router.use('/kyc', kycRoutes);
+router.use('/wallet', walletRoutes);
 
 export default router;

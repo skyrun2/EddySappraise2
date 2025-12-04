@@ -1,19 +1,66 @@
 import prisma from '../config/database';
 import { ApiError } from '../utils/ApiError';
 import { Listing } from '@prisma/client';
+import { storageService } from './storage.service';
 
 export class ListingService {
+    /**
+     * Validate listing data
+     */
+    private validateListingData(data: {
+        images?: string[];
+        price?: number;
+    }): void {
+        // Validate images
+        if (data.images) {
+            if (data.images.length === 0) {
+                throw ApiError.badRequest('At least one image is required');
+            }
+
+            if (data.images.length > 8) {
+                throw ApiError.badRequest('Maximum 8 images allowed');
+            }
+
+            // Validate image URLs
+            data.images.forEach((url) => {
+                if (!storageService.validateImageUrl(url)) {
+                    throw ApiError.badRequest(
+                        'Invalid image URL. Images must be uploaded to our storage.'
+                    );
+                }
+            });
+        }
+
+        // Validate price
+        if (data.price !== undefined) {
+            if (typeof data.price !== 'number' || data.price <= 0) {
+                throw ApiError.badRequest(
+                    'Price must be a positive number in cents'
+                );
+            }
+        }
+    }
+
     async createListing(data: {
         title: string;
         description?: string;
         price: number;
+        condition?: string;
+        category?: string;
+        images: string[];
         sellerId: string;
     }): Promise<Listing> {
+        // Validate listing data
+        this.validateListingData({ images: data.images, price: data.price });
+
         return await prisma.listing.create({
             data: {
                 title: data.title,
                 description: data.description,
                 price: data.price,
+                condition: data.condition,
+                category: data.category,
+                images: data.images,
                 sellerId: data.sellerId,
             },
             include: {
@@ -29,8 +76,10 @@ export class ListingService {
     }
 
     async getAllListings(filters?: { status?: string }): Promise<Listing[]> {
+        const where = filters?.status ? { status: filters.status } : {};
+
         return await prisma.listing.findMany({
-            where: filters,
+            where,
             include: {
                 seller: {
                     select: {
@@ -70,12 +119,28 @@ export class ListingService {
     async updateListing(
         id: string,
         sellerId: string,
-        data: { title?: string; description?: string; price?: number; status?: string }
+        data: {
+            title?: string;
+            description?: string;
+            price?: number;
+            condition?: string;
+            category?: string;
+            images?: string[];
+            status?: string;
+        }
     ): Promise<Listing> {
         const listing = await this.getListingById(id);
 
         if (listing.sellerId !== sellerId) {
             throw ApiError.forbidden('You can only update your own listings');
+        }
+
+        // Validate if images or price are being updated
+        if (data.images || data.price) {
+            this.validateListingData({
+                images: data.images,
+                price: data.price,
+            });
         }
 
         return await prisma.listing.update({

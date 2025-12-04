@@ -7,6 +7,7 @@ import {
     deleteListing,
 } from '../controllers/listing.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { requireKyc } from '../middlewares/requireKyc.middleware';
 
 const router = Router();
 
@@ -16,8 +17,8 @@ router.get('/', getAllListings);
 // GET /api/listings/:id - Get listing by ID (public)
 router.get('/:id', getListingById);
 
-// POST /api/listings - Create listing (protected)
-router.post('/', authMiddleware, createListing);
+// POST /api/listings - Create listing (protected, requires KYC)
+router.post('/', authMiddleware, requireKyc, createListing);
 
 // PUT /api/listings/:id - Update listing (protected, owner only)
 router.put('/:id', authMiddleware, updateListing);

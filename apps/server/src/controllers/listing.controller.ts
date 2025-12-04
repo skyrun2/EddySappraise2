@@ -5,17 +5,19 @@ import { ApiError } from '../utils/ApiError';
 
 export const createListing = asyncHandler(
     async (req: Request, res: Response): Promise<void> => {
-        const { title, description, price } = req.body;
+        const { title, description, price, condition, category, images } = req.body;
         const sellerId = req.user?.id;
 
         if (!sellerId) {
             throw ApiError.unauthorized('Authentication required');
         }
 
-        if (!title || !price) {
+        if (!title || !price || !images) {
+            console.log({ title, price, images });
+
             res.status(400).json({
                 success: false,
-                error: 'Title and price are required',
+                error: 'Title, price, and images are required',
             });
             return;
         }
@@ -23,7 +25,10 @@ export const createListing = asyncHandler(
         const listing = await listingService.createListing({
             title,
             description,
-            price: parseFloat(price),
+            price: parseInt(price),
+            condition,
+            category,
+            images,
             sellerId,
         });
 
